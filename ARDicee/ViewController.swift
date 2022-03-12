@@ -10,18 +10,14 @@ import SceneKit
 import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
-
+    
     @IBOutlet var sceneView: ARSCNView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         
-        let diceScene = SCNScene(named: "art.scnassets/diceCollada.scn")
-        if let diceNode = diceScene?.rootNode.childNode(withName: "Dice", recursively: true) {
-            diceNode.position = SCNVector3(0, 0, -0.1)
-            sceneView.scene.rootNode.addChildNode(diceNode)
-        }
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -31,7 +27,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let configuration = ARWorldTrackingConfiguration()
         
         configuration.planeDetection = .horizontal
-
+        
         // Run the view's session
         sceneView.session.run(configuration)
     }
@@ -47,10 +43,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         if let touch = touches.first {
             let touchLocation = touch.location(in: sceneView)
             let results = sceneView.hitTest(touchLocation, types: .existingPlaneUsingExtent)
-            if !results.isEmpty {
-                print("touched the plane")
-            } else {
-                print("touched sowelse")
+            if let hitResult = results.first {
+                let diceScene = SCNScene(named: "art.scnassets/diceCollada.scn")
+                if let diceNode = diceScene?.rootNode.childNode(withName: "Dice", recursively: true) {
+                    diceNode.position = SCNVector3(hitResult.worldTransform.columns.3.x,
+                                                   hitResult.worldTransform.columns.3.y + diceNode.boundingSphere.radius,
+                                                   hitResult.worldTransform.columns.3.z)
+                    sceneView.scene.rootNode.addChildNode(diceNode)
+                }
             }
         }
     }
